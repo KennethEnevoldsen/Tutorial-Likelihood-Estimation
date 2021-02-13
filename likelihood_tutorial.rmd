@@ -1,0 +1,86 @@
+---
+title: "Likelihood Totorial"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Agenda
+- ~10 minutes slides
+- ~20 min code
+- ~10 exercise 
+- ~5 minutes dicussion
+
+
+```{r}
+library(tidyverse)
+```
+
+
+# Estimating Knowledge of teachers
+Suppose we made each teacher answer $n$ question and we got the following results (1 is correct, 0 is wrong).
+
+```{r}
+thoma = c(rep(1, 9), rep(0, 1))   # 9 correct 1 wrong
+palle = c(rep(1, 2))              # palle has other things to do and only answered 2 question correct
+iker = c(rep(1, 82), rep(0, 18))  # iker is very dilligent and answers lots of questions (82 correct 18 wrong)
+```
+
+Define a function to calculate the binomial distribution:
+```{r}
+# you can simply use dbinom
+binomial <- function(n_correct, n_trials, p){
+  choose(n_trials, n_correct) * p^n_correct * (1-p)^(n_trials-n_correct)  # what does the choose function do?
+}
+```
+
+## Calculate the maximum likelihood 
+```{r}
+grid = seq(from=0, to=1, by=0.001)
+
+n_correct = sum(thoma == 1)
+n_trials = length(thoma)
+
+likelihood = binomial(n_correct, n_trials, grid)
+
+maximum_likelihood = n_correct/n_trials  # derived analytically
+# or
+maximum_likelihood = grid[likelihood == max(likelihood)] # argmax function
+# what is meant by the argmax function?
+```
+
+## Plot the maximum likelihood
+```{r}
+tibble(grid, likelihood) %>% 
+  ggplot(aes(grid,likelihood)) +
+  geom_line(color="steelblue") + 
+    # aesthetic stuff:
+  geom_vline(xintercept=maximum_likelihood, linetype="dashed", alpha=0.5) + 
+  annotate("point", x = maximum_likelihood, y=max(likelihood)) + 
+  theme_minimal() +
+  labs(x="Probability", y="Likelihood")
+```
+
+
+# Likelihood Ratio Test
+```{r}
+h0 <- log(likelihood[grid==0.5])
+ha <- log(likelihood[grid==maximum_likelihood])
+
+lik_ratio <- 2*(ha - h0)  # what does this equation correspond to in the paper?
+
+p_value = pchisq(q = lik_ratio, df = 1, lower.tail = F)
+# interpret the p-value, what does it tell you?
+```
+
+# Exercise 
+- [x] go through the code and make sure you understand it
+- [ ] do if for the two other (you could make it into a function)
+- [ ] make a plot with all three likelihoods
+
+---
+
+
+
+
+
