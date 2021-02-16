@@ -1,5 +1,5 @@
 ---
-title: "Likelihood Totorial"
+title: "Likelihood Tutorial"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -29,7 +29,7 @@ iker = c(rep(1, 82), rep(0, 18))  # iker is very dilligent and answers lots of q
 Define a function to calculate the binomial distribution:
 ```{r}
 # you can simply use dbinom
-binomial <- function(n_correct, n_trials, p){
+binomial_likelihood <- function(n_correct, n_trials, p){
   choose(n_trials, n_correct) * p^n_correct * (1-p)^(n_trials-n_correct)  # what does the choose function do?
 }
 ```
@@ -41,7 +41,7 @@ grid = seq(from=0, to=1, by=0.001)
 n_correct = sum(thoma == 1)
 n_trials = length(thoma)
 
-likelihood = binomial(n_correct, n_trials, grid)
+likelihood = binomial_likelihood(n_correct, n_trials, grid)
 
 maximum_likelihood = n_correct/n_trials  # derived analytically
 # or
@@ -54,12 +54,14 @@ maximum_likelihood = grid[likelihood == max(likelihood)] # argmax function
 tibble(grid, likelihood) %>% 
   ggplot(aes(grid,likelihood)) +
   geom_line(color="steelblue") + 
-    # aesthetic stuff:
+  
+  # aesthetic stuff:
   geom_vline(xintercept=maximum_likelihood, linetype="dashed", alpha=0.5) + 
   annotate("point", x = maximum_likelihood, y=max(likelihood)) + 
   theme_minimal() +
-  labs(x="Probability", y="Likelihood")
+  labs(x="Probability of being correct", y="Likelihood")
 ```
+
 
 
 # Likelihood Ratio Test
@@ -73,13 +75,35 @@ p_value = pchisq(q = lik_ratio, df = 1, lower.tail = F)
 # interpret the p-value, what does it tell you?
 ```
 
+# We can also plot this on the log scale
+```{r}
+library(latex2exp)
+tibble(grid, likelihood) %>% 
+  ggplot(aes(grid,likelihood)) +
+  geom_line(color="steelblue") + 
+  
+  # aesthetic stuff:
+  geom_vline(xintercept=maximum_likelihood, linetype="dashed", alpha=0.5) + 
+  geom_vline(xintercept=0.5, linetype="dashed", alpha=0.5) + 
+  annotate("point", x = maximum_likelihood, y=max(likelihood)) + 
+  annotate("point", x = 0.5, y=likelihood[grid == 0.5]) + 
+  annotate("segment", x = 0.5, xend = maximum_likelihood, 
+           y = likelihood[grid == 0.5], yend=likelihood[grid == 0.5],
+           colour = "black") +
+  annotate("text", x = 0.7, y = likelihood[grid == 0.5]*0.2, 
+           label = TeX("$H_a - H_0$")) + 
+  theme_minimal() +
+  labs(x="Probability of being correct", y="Log(Likelihood)") +
+   scale_y_continuous(trans='log') 
+```
+
+
 # Exercise 
-- [x] go through the code and make sure you understand it
+- [ ] go through the code and make sure you understand it
 - [ ] do if for the two other (you could make it into a function)
 - [ ] make a plot with all three likelihoods
 
 ---
-
 
 
 
